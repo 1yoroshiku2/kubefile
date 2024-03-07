@@ -1,0 +1,36 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: nfs-provisioner
+  namespace: nfs-provisioner
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nfs-provisioner
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: nfs-provisioner
+    spec:
+      serviceAccount: nfs-provisioner
+      containers:
+        - name: nfs-provisioner
+          image: ktsoft-docker.pkg.coding.net/bigdatacenter/images/nfs-client-provisioner:latest
+          volumeMounts:
+            - name: nfs-client-root
+              mountPath: /persistentvolumes
+          env:
+            - name: PROVISIONER_NAME
+              value: /nfs
+            - name: NFS_SERVER
+              value: 10.31.17.42
+            - name: NFS_PATH
+              value: /ext/nfs
+      volumes:
+        - name: nfs-client-root
+          nfs:
+            server: 10.31.17.42
+            path: /ext/nfs

@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nfs-pvc
+spec:
+  accessModes:
+    - ReadWriteMany  # 根据需要选择适当的访问模式
+  resources:
+    requests:
+      storage: 200Gi  # 请求适当大小的存储容量，不超过 PV 的容量

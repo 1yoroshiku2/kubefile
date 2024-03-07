@@ -1,0 +1,9 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: aabb
+provisioner: client/nfs
+#volumeBindingMode: External  #默认为Immediate: PV 立即绑定模式
+#parameters:
+#  server: rtduat.file.core.windows.net
+#  path: /rtduat/middleware/zk

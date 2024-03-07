@@ -1,0 +1,115 @@
+#flow：
+apiVersion: apps/v1 # for versions before 1.8.0 use apps/v1beta1
+kind: Deployment
+metadata:
+  name: flink-flow
+  namespace: middleware
+  labels:
+    app: flow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flow
+  template:
+    metadata:
+      labels:
+        app: flow
+    spec:
+    #  nodeSelector:
+    #    env: test-team
+      containers:
+      - name: flink
+        image: flink:1.13.1 # replace it with your exactly <image_name:tags>
+        args: ["jobmanager"]
+        ports:
+        - containerPort: 8081
+        - containerPort: 6123
+        volumeMounts:
+        - name: flow
+          mountPath: /opt/flink/task
+      volumes:
+      - name: flow
+        hostPath:
+          path: /data/flink/task
+          type: Directory
+        resources:
+          limits:
+            cpu: "400m"
+      nodeName: cn-hangzhou.10.52.10.142
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flow
+  namespace: middleware
+  labels:
+    app: flow
+spec:
+  type: NodePort
+  ports:
+  - name:  server-6650
+    port: 6650
+    targetPort: 6650
+    protocol: TCP
+    nodePort: 30108
+  selector:
+    app: flow	
+---    
+#income：
+apiVersion: apps/v1 # for versions before 1.8.0 use apps/v1beta1
+kind: Deployment
+metadata:
+  name: flink-income
+  namespace: middleware
+  labels:
+    app: income
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: income
+  template:
+    metadata:
+      labels:
+        app: income
+    spec:
+    #  nodeSelector:
+    #    env: test-team
+      containers:
+      - name: flink
+        image: flink:1.13.1 # replace it with your exactly <image_name:tags>
+        args: ["jobmanager"]
+        ports:
+        - containerPort: 8081
+        - containerPort: 6123
+        volumeMounts:
+        - name: income
+          mountPath: /opt/flink/task
+      volumes:
+      - name: income
+        hostPath:
+          path: /data/flink/task
+          type: Directory
+        resources:
+          limits:
+            cpu: "400m"
+      nodeName: cn-hangzhou.10.52.10.142
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: income
+  namespace: middleware
+  labels:
+    app: income
+spec:
+  type: NodePort
+  ports:
+  - name:  server-6650
+    port: 6650
+    targetPort: 6650
+    protocol: TCP
+    nodePort: 30109
+  selector:
+    app: income	    

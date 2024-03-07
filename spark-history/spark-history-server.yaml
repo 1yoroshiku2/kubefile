@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spark-history-server
+spec:
+  selector:
+    matchLabels:
+      run: spark-history-server
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: spark-history-server
+    spec:
+      imagePullSecrets:
+      - name: tc-harborsecret
+      serviceAccount: spark-operator-spark
+      containers:
+        - image: kt-harbor.tencentcloudcr.com/keytop-test/spark-test:test7
+          name: spark-history-server
+          args: ["/opt/spark/bin/spark-class", "org.apache.spark.deploy.history.HistoryServer"]
+          ports:
+            - containerPort: 18080
+              name: http
+          #env:
+          #- name: SPARK_HISTORY_OPTS
+          #  value: "-Dspark.history.fs.logDirectory=cosn://spark-test-1309102445/spark/shs"
+          #- name: SPARK_HISTORY_OPTS_1
+          #  value: "-Dspark.hadoop.fs.cosn.impl=org.apache.hadoop.fs.CosFileSystem"
+          volumeMounts:
+          - name: spark-history-server
+            mountPath: /opt/spark/conf
+      volumes:
+      - name: spark-history-server
+        configMap: 
+          name: spark-defaults

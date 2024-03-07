@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minio
+  namespace: kt
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: minio
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: minio
+    spec:
+      containers:
+      - name: minio
+        image: ktsoft-docker.pkg.coding.net/yongce/kt-public-image/minio:private
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9000
+          name: minio9000
+          protocol: TCP
+        - containerPort: 9090
+          name: minio9090
+          protocol: TCP
+        - containerPort: 38312
+          name: minio38312
+          protocol: TCP
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 1000
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 512M
+        args:
+        - server
+        - --console-address=:9090
+        - /data
+        env:
+        - name: MINIO_ROOT_USER
+          value: keytop
+        - name: MINIO_ROOT_PASSWORD
+          value: keytop@123
+        volumeMounts:
+        - name: minio-volume
+          mountPath: /data
+        securityContext:
+          runAsUser: 0
+          allowPrivilegeEscalation: true
+      volumes:
+      - name: minio-volume
+        hostPath:
+          path: IM_PATH_MINIO_DATA		#修改问本机的挂载目录
+          type: DirectoryOrCreate
+      nodeName: IM_NODE			#修改为本机的hostname
+      imagePullSecrets:
+      - name: coding-docker-pull-private
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio
+  namespace: kt
+spec:
+  selector:
+    app: minio
+  type: NodePort
+  ports:
+  - name: minio9000
+    port: 9000
+    nodePort: 30009
+    targetPort: 9000
+  - name: minio9090
+    port: 9090
+    nodePort: 30019
+    targetPort: 9090
+  - name: minio38312
+    port: 38312
+    nodePort: 30010
+    targetPort: 38312
+
+
