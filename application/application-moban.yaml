@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: app-name
+  name: app-name
+  namespace: kt
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app-name
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: app-name
+    spec:
+      containers:
+        - image: ktsoft-docker.pkg.coding.net/yongcepingtaipro2.0/kt-pro-1.0.0/app-name:v1.0.0
+          imagePullPolicy: IfNotPresent
+          name: app-name
+          ports:
+            - containerPort: 111
+              name: port111
+              protocol: TCP
+          resources:
+            limits:
+              memory: 1024Mi
+            requests:
+              memory: 512Mi
+      imagePullSecrets:
+        - name: coding-docker-pull-private
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: app-name
+  name: app-name
+  namespace: kt
+spec:
+  ports:
+    - name: port111
+      nodePort: 222
+      port: 111
+      protocol: TCP
+      targetPort: 111
+  selector:
+    app: app-name
+  type: NodePort
